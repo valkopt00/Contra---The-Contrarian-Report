@@ -34,8 +34,8 @@ The Contra platform is a content subscription system focused on reports and arti
 1. Clone the repository to your local machine
 
     ```
-    git clone https://github.com/thuliovs/Contra.git
-    cd Contra
+    git clone https://github.com/valkopt00/Contra---The-Contrarian-Report.git
+
     ```
 
 2. Create and activate a virtual environment
@@ -45,6 +45,7 @@ The Contra platform is a content subscription system focused on reports and arti
     ```
     python -m venv .venv
     .venv\Scripts\activate
+
     ```
     
     For macOS/Linux:
@@ -52,6 +53,7 @@ The Contra platform is a content subscription system focused on reports and arti
     ```
     python -m venv .venv
     source .venv/bin/activate
+    
     ```
 
 3. Install the required dependencies

@@ -1,0 +1,23 @@
+------------------
+	Contra Report
+------------------
+
+Personal Sandbox PayPal Account:
+	client1@pers.pt
+	teste1234		
+	Alberto Antunes
+
+Business/Merchant PayPal Account:
+	contra1@bus.pt
+	teste1234
+	Armando Administrador
+
+App Name:
+	Contra Test App
+
+Client ID:
+	AdJehFhXVASN5T7vYUDM_j5jUYgNRQleBtAjZ2jkb2VjJY7QIccnMhg1yFIXtbCGJmUeO2qN01tVLvL4
+
+Secret Key ID:
+	EL0eM_xfPZxHMnpLAX0JGIqS6ZjHAp_fh3_DGZoc1JHxO9sKyYKecNe_9wxJkMa4rg3eOlaLDShCeJzn
+	

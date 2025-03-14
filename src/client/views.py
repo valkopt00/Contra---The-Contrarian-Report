@@ -19,6 +19,8 @@ from .forms import UpdateUserForm
 from common.forms import CustomPasswordChangeForm
 from common.django_utils import async_render
 
+from . import paypal as pp
+
 # Criar uma versão assíncrona da função update_session_auth_hash
 async_update_session_auth_hash = sync_to_async(update_session_auth_hash)
 

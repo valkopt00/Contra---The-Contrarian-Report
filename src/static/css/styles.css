@@ -27,7 +27,7 @@ body {
     padding: 0px 0px 0px 10px;
 }
 
-.form-layout,  {
+.form-layout  {
     border-radius: 40px;
     width: 600px;
     backdrop-filter: blur(10px);

@@ -51,6 +51,14 @@ async def arender(*render_args, **render_kargs) -> HttpResponse:
         return render(*render_args, **render_kargs)
     return await sync_call_render()
 
+async def async_render(*render_args, **render_kargs) -> HttpResponse:
+
+    @sync_to_async
+    def sync_call_render() -> HttpResponse:
+        return render(*render_args, **render_kargs)
+
+    return await sync_call_render()
+
 async def alogout(*render_args, **render_kargs):
     @sync_to_async
     def sync_call_logout():

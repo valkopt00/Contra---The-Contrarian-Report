@@ -13,19 +13,23 @@
 {% endif %}
  {% endcomment %}
 
-<div class="container-cm rounded bg-white mt-5 p-5 shadow">
-    <h3>{% translate "New subscription plan" %}</h3>
-    <p>{%translate "You may update yout subscription for one of these options:"%}</p>
-    <form
-        method="POST"
-        autocomlete="OFF">
-        {% csrf_token %} 
-        
-        {{update_subscription_form|crispy}}
+ <div class="container">
+  <div class="row">
+    <div class="container-cm rounded bg-white my-5 p-5 shadow text-center">
+        <h3>{% translate "New subscription plan" %}</h3>
+        <p>{%translate "You may update yout subscription for one of these options:"%}</p>
+        <form
+            method="POST"
+            autocomlete="OFF">
+            {% csrf_token %} 
+            
+            {{update_subscription_form|crispy}}
 
-        <a href={%url "client-update-user"%} class="btn btn-light rounded-0 float-end" type="submit">{%translate "Cancel"%}</a>
-        <input class="btn btn-dark rounded-0 float-end" type="submit" value="{%translate "Update"%}"/>
-    </form>
+            <a href={%url "update-client"%} class="btn btn-light rounded-0 float-end" type="submit">{%translate "Cancel"%}</a>
+            <input class="btn btn-dark rounded-0 float-end" type="submit" value="{%translate "Update"%}"/>
+        </form>
+    </div>
+  </div>
 </div>
 
 <div class="container">

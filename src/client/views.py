@@ -5,8 +5,11 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.contrib.auth import update_session_auth_hash
 from asgiref.sync import sync_to_async
-
+from client.forms import UpdateSubscriptionForm
 from .models import Subscription, PlanChoice
+from django.urls import reverse
+
+
 from writer.models import Article
 from common.django_utils import arender, add_message, alogout
 from common.auth import aclient_required, ensure_for_current_user # type: ignore
@@ -14,6 +17,7 @@ from common.auth import aget_user
 from . import paypal as sub_manager
 from .forms import UpdateUserForm
 from common.forms import CustomPasswordChangeForm
+from common.django_utils import async_render
 
 # Criar uma versão assíncrona da função update_session_auth_hash
 async_update_session_auth_hash = sync_to_async(update_session_auth_hash)
@@ -159,6 +163,93 @@ async def cancel_subscription(request: HttpRequest, id: int) -> HttpResponse:
 
     context = {'subscription_plan': (await subscription.aplan_choice()).name}
     return await arender(request, 'client/cancel-subscription.html', context)
+
+@aclient_required
+@ensure_for_current_user(Subscription, redirect_if_missing="client-dashboard")
+async def update_subscription(
+    request: HttpRequest, subscription: Subscription
+) -> HttpResponse:
+
+    user_plan_choice = await subscription.aplan_choice()
+
+    if request.method == "POST":
+        # Primeiro atualiza no paypal
+        new_plan_code = request.POST["plan_choices"]
+        new_plan_choice = await PlanChoice.afrom_plan_code(new_plan_code)
+        new_plan_id = new_plan_choice.external_plan_id
+
+        access_token = await pp.get_access_token()
+        approval_url = await pp.update_subscription_pp(
+            access_token,
+            subscription_id=subscription.external_subscription_id,
+            new_plan_id=new_plan_id,
+            return_url=request.build_absolute_uri(
+                reverse("update-subscription-result")
+            ),
+            cancel_url=request.build_absolute_uri(reverse("client-update-user")),
+        )
+
+        if approval_url:
+            http_response = redirect(approval_url)
+            request.session["subscription.id"] = subscription.id  # type: ignore
+            request.session["new_plan_id"] = new_plan_id  # type: ignore
+        else:
+            error_msg = "An error occurred while updating your subscription. Please try again later."
+            http_response = HttpResponse(error_msg)
+            http_response = redirect("client-dashboard")
+
+    else:
+        form = await UpdateSubscriptionForm.ainit(exclude=[user_plan_choice.plan_code])
+
+        context = {
+            "plan_choices": PlanChoice.objects.filter(is_active=True).exclude(
+                plan_code=user_plan_choice.plan_code
+            ),
+            "update_subscription_form": form,
+        }
+
+        http_response = await async_render(
+            request, "client/update-subscription.html", context
+        )
+
+    return http_response
+
+
+@aclient_required
+async def update_subscription_result(request: HttpRequest) -> HttpResponse:
+
+    session = request.session
+    try:
+        subscription_db_id = session["subscription.id"]
+        new_plan_id = session["new_plan_id"]
+    except KeyError:
+        error_msg = "An error occurred while updating your subscription. Please try again later."
+        return HttpResponse(error_msg)
+    else:
+        del session["subscription.id"]
+        del session["new_plan_id"]
+
+    subscription = await Subscription.objects.aget(id=int(subscription_db_id))
+    subscription_id = subscription.external_subscription_id
+
+    access_token = await pp.get_access_token()
+
+    subscription_details = await pp.get_subscription_details(
+        access_token, subscription_id
+    )
+
+    if not (
+        subscription_details["status"] == "ACTIVE"
+        and subscription_details["plan_id"] == new_plan_id
+    ):
+        error_msg = "An error occurred while updating your subscription. Please try again later."
+        return HttpResponse(error_msg)
+
+    new_plan_choice = await PlanChoice.objects.aget(external_plan_id=new_plan_id)
+    subscription.plan_choice = new_plan_choice
+    await subscription.asave()
+
+    return await async_render(request, "client/update-subscription-result.html")
 
 
 @aclient_required

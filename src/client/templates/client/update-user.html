@@ -16,7 +16,7 @@
 
             <hr width="100%" style="margin-top: 0px; margin-bottom: 20px;">
             <div class="d-flex justify-content-between align-items-center no-wrap" style="gap: 20px;">
-                <a href="{% url 'update-subscription' %}" class="btn-primary" style="margin: 0;">{% translate 'Upgrade Subscription' %}</a>
+                <a href="{% url 'update-subscription' subscription.id %}" class="btn-primary" style="margin: 0;">{% translate 'Upgrade Subscription' %}</a>
                 <a href="{% url 'cancel-subscription' subscription.id %}" class="btn-danger" style="margin: 0;">{% translate 'Cancel Subscription' %}</a>
             </div>
         </div>

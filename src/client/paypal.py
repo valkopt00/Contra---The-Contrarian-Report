@@ -1,6 +1,7 @@
 import httpx
 
 from contra import settings
+from urllib import response
 
 
 
@@ -21,6 +22,49 @@ async def get_access_token() -> str:
             data = data,
         )).json()
         return resp_data['access_token']
+    
+async def update_subscription_pp(
+    acess_token: str,
+    subscription_id: str,
+    new_plan_id: str,
+    return_url: str,
+    cancel_url: str,
+) -> str:
+    
+    url = f"{settings.PAYPAL_BILLING_SUBSCRIPTIONS_URL}/v1/billing/subscriptions/{subscription_id}/revise"
+    
+    bearer_token = f"Bearer {acess_token}"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": bearer_token,
+        "Accept": "application/json",
+    }
+    
+    update_data = {
+        "plan_id": new_plan_id,
+        "application_context": {
+            "return_url": return_url,
+            "cancel_url": cancel_url,
+            "user_action": "SUBSCRIBE_NOW",
+        },
+    }
+    
+    approval_url = ""
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=update_data)
+
+        print(f"{response.status_code=}")
+        
+        response_json = response.json()
+        
+        for link in response_json.get("links"):
+            if link.get("rel") == "approve":
+                approval_url = link["href"]
+                break
+        
+    return approval_url
 
 
 async def cancel_subscription(

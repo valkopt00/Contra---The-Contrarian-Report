@@ -188,7 +188,7 @@ async def update_subscription(
             return_url=request.build_absolute_uri(
                 reverse("update-subscription-result")
             ),
-            cancel_url=request.build_absolute_uri(reverse("client-update-user")),
+            cancel_url=request.build_absolute_uri(reverse("update-client")),
         )
 
         if approval_url:

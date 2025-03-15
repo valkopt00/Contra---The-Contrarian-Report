@@ -23,7 +23,7 @@ async def get_access_token() -> str:
         )).json()
         return resp_data['access_token']
     
-async def update_subscription_pp(
+async def update_subscription_plan(
     acess_token: str,
     subscription_id: str,
     new_plan_id: str,
@@ -31,37 +31,36 @@ async def update_subscription_pp(
     cancel_url: str,
 ) -> str:
     
-    url = f"{settings.PAYPAL_BILLING_SUBSCRIPTIONS_URL}/v1/billing/subscriptions/{subscription_id}/revise"
+    url = f'{settings.PAYPAL_BILLING_SUBSCRIPTIONS_URL}/{subscription_id}/revise'
     
-    bearer_token = f"Bearer {acess_token}"
-
     headers = {
-        "Content-Type": "application/json",
-        "Authorization": bearer_token,
-        "Accept": "application/json",
+        'Authorization': f'Bearer {acess_token}',
+        'Content-Type': 'application/json',
+        'Accept': "application/json",
     }
     
     update_data = {
-        "plan_id": new_plan_id,
-        "application_context": {
-            "return_url": return_url,
-            "cancel_url": cancel_url,
-            "user_action": "SUBSCRIBE_NOW",
+        'plan_id': new_plan_id,
+        'application_context': {
+            'return_url': return_url,
+            'cancel_url': cancel_url,
+            'user_action': 'SUBSCRIBE_NOW',
         },
     }
     
     approval_url = ""
     
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=update_data)
+        resp = await client.post(url, headers=headers, json=update_data)
+        resp.raise_for_status()
 
-        print(f"{response.status_code=}")
+        print(f"[+]{resp.status_code=}")
         
-        response_json = response.json()
+        resp_data = resp.json()
         
-        for link in response_json.get("links"):
-            if link.get("rel") == "approve":
-                approval_url = link["href"]
+        for link_details in resp_data.get('links', []):
+            if link_details.get('rel') == 'approve':
+                approval_url = link_details["href"]
                 break
         
     return approval_url

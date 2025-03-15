@@ -26,26 +26,27 @@ class UpdateSubscriptionForm(Form, AsyncModelFormMixin):
         label=_t("Update Plan Choices"),
     )
 
-    def __init__(self,
-                 exclude: Iterable[str] | None,
-                 *args,
-                 **kwargs
+    def __init__(
+            self,
+            *args,
+            exclude: Iterable[str] | None = None,
+            **kargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kargs)
         
-        plan_choices_available = PlanChoice.objects.filter(is_active=True)
+        plan_choices = PlanChoice.objects.filter(is_active=True)
         
         if exclude:
-            plan_choices_available = plan_choices_available.exclude(plan_code__in=exclude)
+            plan_choices = plan_choices.exclude(plan_code__in=exclude)
 
         self.fields["plan_choices"].choices = (
-            (plan_choice.plan_code, plan_choice.name) for plan_choice in plan_choices_available
+            (plan_choice.plan_code, plan_choice.name) for plan_choice in plan_choices
         )
         
     @classmethod
-    async def ainit(cls, *args, **kwargs)-> "UpdateSubscriptionForm":
+    async def ainit(cls, *args, **kargs)-> "UpdateSubscriptionForm":
         @sync_to_async
         def call_init() -> UpdateSubscriptionForm:
-            return UpdateSubscriptionForm(*args, **kwargs)
+            return UpdateSubscriptionForm(*args, **kargs)
         
         return await call_init()

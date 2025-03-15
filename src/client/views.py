@@ -180,8 +180,8 @@ async def update_subscription(
         new_plan_choice = await PlanChoice.afrom_plan_code(new_plan_code)
         new_plan_id = new_plan_choice.external_plan_id
 
-        access_token = await pp.get_access_token()
-        approval_url = await pp.update_subscription_pp(
+        access_token = await sub_manager.get_access_token()
+        approval_url = await sub_manager.update_subscription_plan(
             access_token,
             subscription_id=subscription.external_subscription_id,
             new_plan_id=new_plan_id,
@@ -234,9 +234,9 @@ async def update_subscription_result(request: HttpRequest) -> HttpResponse:
     subscription = await Subscription.objects.aget(id=int(subscription_db_id))
     subscription_id = subscription.external_subscription_id
 
-    access_token = await pp.get_access_token()
+    access_token = await sub_manager.get_access_token()
 
-    subscription_details = await pp.get_subscription_details(
+    subscription_details = await sub_manager.get_subscription_details(
         access_token, subscription_id
     )
 
